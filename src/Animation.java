@@ -13,7 +13,7 @@ public class Animation extends Action{
             scheduler.scheduleEvent(super.getEntity(),
                     createAnimationAction(super.getEntity(),
                             Math.max(this.repeatCount - 1, 0)),
-                    super.getEntity().getAnimationPeriod());
+                    ((Animate)super.getEntity()).getAnimationPeriod());
         }
     }
 }

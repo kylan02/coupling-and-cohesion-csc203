@@ -11,25 +11,28 @@ public class Activity extends Action{
 
 
     public void executeAction(EventScheduler scheduler) {
-        switch (super.getEntity().getKind()) {
-            case SAPLING:
-                super.getEntity().executeSaplingActivity(this.world, this.imageStore, scheduler);
-                break;
-            case TREE:
-                super.getEntity().executeTreeActivity( this.world, this.imageStore, scheduler);
-                break;
-            case FAIRY:
-                super.getEntity().executeFairyActivity(this.world, this.imageStore, scheduler);
-                break;
-            case DUDE_NOT_FULL:
-                super.getEntity().executeDudeNotFullActivity(this.world, this.imageStore, scheduler);
-                break;
-            case DUDE_FULL:
-                super.getEntity().executeDudeFullActivity( this.world, this.imageStore, scheduler);
-                break;
-            default:
-                throw new UnsupportedOperationException(String.format("executeActivityAction not supported for %s",
-                        super.getEntity().getKind()));
+        if (this.getEntity() instanceof Active){
+            ((Active)this.getEntity()).executeActivity(this.world, this.imageStore, scheduler);
         }
+//        switch (super.getEntity().getKind()) {
+//            case SAPLING:
+//                super.getEntity().executeSaplingActivity(this.world, this.imageStore, scheduler);
+//                break;
+//            case TREE:
+//                super.getEntity().executeTreeActivity( this.world, this.imageStore, scheduler);
+//                break;
+//            case FAIRY:
+//                super.getEntity().executeFairyActivity(this.world, this.imageStore, scheduler);
+//                break;
+//            case DUDE_NOT_FULL:
+//                super.getEntity().executeDudeNotFullActivity(this.world, this.imageStore, scheduler);
+//                break;
+//            case DUDE_FULL:
+//                super.getEntity().executeDudeFullActivity( this.world, this.imageStore, scheduler);
+//                break;
+//            default:
+//                throw new UnsupportedOperationException(String.format("executeActivityAction not supported for %s",
+//                        super.getEntity().getKind()));
+//        }
     }
 }
