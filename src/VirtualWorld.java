@@ -1,6 +1,11 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import processing.core.*;
 
@@ -111,6 +116,7 @@ public final class VirtualWorld extends PApplet {
 
     // Just for debugging and for P5
     // Be sure to refactor this method as appropriate
+    private final ScheduledExecutorService scheduler2 = Executors.newScheduledThreadPool(1);
     public void mousePressed() {
         Point pressed = mouseToPoint();
         System.out.println("CLICK! " + pressed.getX() + ", " + pressed.getY());
@@ -120,8 +126,48 @@ public final class VirtualWorld extends PApplet {
             Entity entity = entityOptional.get();
             System.out.println(entity.getId() + ": " + entity.getKey());
         }
+        DIAGONAL_CARDINAL_NEIGHBORS.apply(pressed)
+                .filter(p -> world.withinBounds(p) && !world.isOccupied(p))
+                        .forEach(neighbor -> {
+                            world.setBackgroundCell(neighbor, new Background("sand", imageStore.getImageList(Sand.SAND_KEY)));
+                        });
+        Sand sand = new Sand(" ", new Point(pressed.getX(), pressed.getY()), imageStore.getImageList(Sand.SAND_KEY));
+        //Active crab = new Crab(" ", new Point(pressed.getX(), pressed.getY()), imageStore.getImageList(Crab.CRAB_KEY), Crab.CRAB_ANIMATION_PERIOD, Crab.CRAB_ACTION_PERIOD);
+        try{
+            world.tryAddEntity(sand);
+        }catch (Exception e){
+            System.out.println("Position Occupied");
+        }
+
+
+        for (int i = 0; i < 3; i++) {
+            // Schedule the crab spawning task with an increasing delay
+            scheduler2.schedule(() -> spawnCrab(sand, pressed), 5 * i, TimeUnit.SECONDS);
+        }
 
     }
+    private void spawnCrab(Sand sand, Point pressed) {
+        // Your crab spawning code here
+        try{
+            sand.spawnCrab(pressed, imageStore, world, scheduler, p -> world.withinBounds(p) && !world.isOccupied(p), DIAGONAL_CARDINAL_NEIGHBORS);
+        }catch (Exception e){
+            System.out.println("Exception ahdgl gsahs dlla");
+        }
+        System.out.println("Crab spawned!");
+    }
+
+    private static final Function<Point, Stream<Point>> DIAGONAL_CARDINAL_NEIGHBORS =
+            point ->
+                    Stream.<Point>builder()
+                            .add(new Point(point.getX() - 1, point.getY() - 1))
+                            .add(new Point(point.getX() + 1, point.getY() + 1))
+                            .add(new Point(point.getX() - 1, point.getY() + 1))
+                            .add(new Point(point.getX() + 1, point.getY() - 1))
+                            .add(new Point(point.getX(), point.getY() - 1))
+                            .add(new Point(point.getX(), point.getY() + 1))
+                            .add(new Point(point.getX() - 1, point.getY()))
+                            .add(new Point(point.getX() + 1, point.getY()))
+                            .build();
 
     public void scheduleActions(WorldModel world, EventScheduler scheduler, ImageStore imageStore) {
         for (Entity entity : world.entities()) {

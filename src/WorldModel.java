@@ -25,10 +25,18 @@ public final class WorldModel {
     }
 
     public void setOccupancyCell(Point pos, Entity entity) {
-
-        this.occupancy[pos.getY()][pos.getX()] = entity;
+        if(pos.getY() >= 0 && pos.getX() >= 0) {
+            this.occupancy[pos.getY()][pos.getX()] = entity;
+        }
     }
 
+    public void changeBloodyDudeToDude(Entity e, EventScheduler scheduler, ImageStore imageStore){
+        Point bloodyPosition = e.getPosition();
+        this.removeEntityAt(bloodyPosition);
+        Active dude = new DudeNotFull(" ", bloodyPosition, imageStore.getImageList(Dude.DUDE_KEY), Dude.DUDE_ANIMATION_PERIOD, Dude.DUDE_ACTION_PERIOD, Dude.DUDE_LIMIT);
+        this.tryAddEntity(dude);
+        dude.scheduleActions(scheduler, this, imageStore);
+    }
     public void removeEntityAt(Point pos) {
         if (this.withinBounds(pos) && this.getOccupancyCell(pos) != null) {
             Entity entity = this.getOccupancyCell( pos);
@@ -77,9 +85,12 @@ public final class WorldModel {
         List<Entity> ofType = new LinkedList<>();
         for (String kind : kinds) {
             for (Entity entity : this.entities) {
-                if (entity.getKey().equals(kind)) {
-                    ofType.add(entity);
+                if(entity != null){
+                    if (entity.getKey().equals(kind)) {
+                        ofType.add(entity);
+                    }
                 }
+
             }
         }
 
@@ -167,6 +178,7 @@ public final class WorldModel {
                 case Obstacle.OBSTACLE_KEY -> world.parseObstacle(properties, pt, id, imageStore);
                 case Dude.DUDE_KEY -> world.parseDude(properties, pt, id, imageStore);
                 case Fairy.FAIRY_KEY -> world.parseFairy(properties, pt, id, imageStore);
+                case Crab.CRAB_KEY -> world.parseCrab(properties, pt, id, imageStore);
                 case House.HOUSE_KEY -> world.parseHouse(properties, pt, id, imageStore);
                 case Tree.TREE_KEY -> world.parseTree(properties, pt, id, imageStore);
                 case Sapling.SAPLING_KEY -> world.parseSapling(properties, pt, id, imageStore);
@@ -227,6 +239,15 @@ public final class WorldModel {
             this.tryAddEntity(entity);
         }else{
             throw new IllegalArgumentException(String.format("%s requires %d properties when parsing", Fairy.FAIRY_KEY, Fairy.FAIRY_NUM_PROPERTIES));
+        }
+    }
+
+    public void parseCrab(String[] properties, Point pt, String id, ImageStore imageStore) {
+        if (properties.length == Crab.CRAB_NUM_PROPERTIES) {
+            Crab entity = new Crab(id, pt, imageStore.getImageList(Crab.CRAB_KEY), Crab.CRAB_ANIMATION_PERIOD, Double.parseDouble(properties[Crab.CRAB_ACTION_PERIOD]));
+            this.tryAddEntity(entity);
+        }else{
+            throw new IllegalArgumentException(String.format("%s requires %d properties when parsing", Crab.CRAB_KEY, Crab.CRAB_NUM_PROPERTIES));
         }
     }
 
